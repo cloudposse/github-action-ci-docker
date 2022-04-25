@@ -1,0 +1,72 @@
+name: "docker"
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ACCOUNT_ID: ""
+
+jobs:
+  ecr-public:
+    # only run on pull requests so long as they don't come from forks
+    if: ( (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) ) || (github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-gbl-core-artifacts-
+          role-session-name: github-action-ci-docker-workflow
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Test, and Push to Public ECR Registry
+        uses: ./
+        if: always()
+        with:
+          docker_registry: ""
+          run_tests: "true"
+          subdirectory: ./test
+          tests_script: ./test/test.sh
+
+  ecr-private:
+    # only run on pull requests so long as they don't come from forks
+    if: ( (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) ) || (github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
+
+    # these permissions are needed to interact with GitHub's OIDC Token endpoint
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-gbl-core-artifacts-
+          role-session-name: github-action-ci-docker-workflow
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Test, and Push to Private ECR Registry
+        uses: ./
+        if: always()
+        with:
+          docker_registry: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+          run_tests: "true"
+          subdirectory: ./test
+          tests_script: ./test/test.sh

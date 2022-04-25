@@ -22,7 +22,7 @@ github_repo: "cloudposse/github-action-ci-docker"
 # Badges to display
 badges:
   - name: "Build Status"
-    image: "https://github.com/cloudposse/github-action-ci-docker/workflows/ci-docker/badge.svg?branch=main"
+    image: "https://github.com/cloudposse/github-action-ci-docker/workflows/docker/badge.svg?branch=main"
     url: "https://github.com/cloudposse/github-action-ci-docker/actions?query=workflow%3Adocker"
   - name: "Latest Release"
     image: "https://img.shields.io/github/release/cloudposse/github-action-ci-docker.svg"
@@ -40,7 +40,7 @@ related:
     url: "https://github.com/cloudposse/github-action-terraform-auto-context"
   - name: "GitHub Action CI Terraform"
     description: "Full suite of CI actions specifically built for Terraform, along with chatops support"
-    url: "https://github.com/cloudposse/github-action-terraform-ci"
+    url: "https://github.com/cloudposse/github-action-ci-terraform"
   - name: "GitHub Action Validate CODEOWNERS"
     description: "Validate and lint contents of CODEOWNERS file"
     url: "https://github.com/cloudposse/github-action-validate-codeowners"
@@ -65,7 +65,7 @@ usage: |-
 # Example usage
 examples: |-
   Here's a real world example:
-  - [`github-action-ci-docker`](https://github.com/cloudposse/github-action-ci-docker/.github/workflows/ci-docker.yml/) - Cloud Posse's self-testing Docker GitHub Action
+  - [`github-action-ci-docker`](https://github.com/cloudposse/github-action-ci-docker/.github/workflows/docker.yml/) - Cloud Posse's self-testing Docker GitHub Action
 
 # How to get started quickly
 quickstart: |-
