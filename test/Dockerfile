@@ -2,8 +2,9 @@ ARG ALPINE_VERSION="3.15"
 
 FROM docker.io/library/alpine:${ALPINE_VERSION}
 
-RUN apk add bash curl
+ARG ALPINE_VERSION
 
-RUN curl -sSL https://apk.cloudposse.com/install.sh | bash
+ADD https://apk.cloudposse.com/ops@cloudposse.com.rsa.pub /etc/apk/keys/
 
-RUN apk add atmos@cloudposse terraform@cloudposse
+RUN echo "@cloudposse https://apk.cloudposse.com/${ALPINE_VERSION}/vendor" >> /etc/apk/repositories && \
+    apk add --no-cache atmos@cloudposse==1.4.11-r0 terraform@cloudposse==1.1.8-r0
