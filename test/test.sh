@@ -7,4 +7,4 @@ declare -a PACKAGES=(
 	"terraform"
 )
 
-for p in ${PACKAGES[@]}; do type -g "$p" &>/dev/null; done
+for p in ${PACKAGES[@]}; do type "$p" &>/dev/null; done
