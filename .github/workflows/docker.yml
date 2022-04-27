@@ -40,7 +40,7 @@ jobs:
         uses: ./
         if: always()
         with:
-          docker_registry: ""
+          docker_registry: public.ecr.aws/p6x8r6t0/cloudposse
           run_tests: "true"
           subdirectory: ./test
           tests_script: ./test/test.sh
