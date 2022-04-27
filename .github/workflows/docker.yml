@@ -7,8 +7,13 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  AWS_REGION: us-east-2
-  AWS_ACCOUNT_ID: ""
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: "095356423315"
+
+# these permissions are needed to interact with GitHub's OIDC Token endpoint
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   ecr-public:
@@ -22,7 +27,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-gbl-core-artifacts-
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-core-ue1-artifacts-ecr-public-github-action
           role-session-name: github-action-ci-docker-workflow
           aws-region: ${{ env.AWS_REGION }}
 
@@ -42,12 +47,6 @@ jobs:
     # only run on pull requests so long as they don't come from forks
     if: ( (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) ) || (github.event_name != 'pull_request')
     runs-on: ubuntu-latest
-
-    # these permissions are needed to interact with GitHub's OIDC Token endpoint
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -55,7 +54,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-gbl-core-artifacts-
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/cptest-core-ue1-artifacts-ecr-private-github-action
           role-session-name: github-action-ci-docker-workflow
           aws-region: ${{ env.AWS_REGION }}
 
@@ -66,7 +65,7 @@ jobs:
         uses: ./
         if: always()
         with:
-          docker_registry: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+          docker_registry: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/cloudposse
           run_tests: "true"
           subdirectory: ./test
           tests_script: ./test/test.sh
