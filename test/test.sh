@@ -7,4 +7,6 @@ declare -a PACKAGES=(
 	"terraform"
 )
 
-for p in ${PACKAGES[@]}; do type "$p" &>/dev/null; done
+for p in ${PACKAGES[@]}; do
+	docker run $IMAGE bash -c "type $p"
+done

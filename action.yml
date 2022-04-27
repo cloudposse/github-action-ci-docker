@@ -104,6 +104,8 @@ runs:
 
     - name: Run tests
       if: ${{ steps.vars.outputs.tests_enabled == 'true' }}
+      env:
+        IMAGE: ${{ steps.vars.outputs.image_tag_sha }}
       run: |
         ${{ inputs.app_checkout_path }}/${{ inputs.tests_script }}
       shell: bash
