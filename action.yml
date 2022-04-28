@@ -8,6 +8,26 @@ inputs:
     description: The path to checkout the application repository to during the workflow run
     default: ./app-repo
     required: false
+  aws-ecr-login:
+    description: A `true` value will attempt to login to ECR
+    default: "false"
+    required: false
+  aws-assume-role:
+    description: A `true` value will attempt to assume an AWS IAM Role using ODIC
+    default: "false"
+    required: false
+  aws-iam-role-arn:
+    description: The ARN of the AWS IAM Role to assume, required of `aws-iam-assume-role` is `true`
+    default: ""
+    required: false
+  aws-iam-role-session-name:
+    description: The name of the AWS assume role session
+    default: github-action-ci-docker-workflow
+    required: false
+  aws-region:
+    description: The AWS Region to authenticate with
+    default: us-east-1
+    required: false
   deploy:
     description: A `true` value will trigger a GitHub deployment
     required: false
@@ -60,6 +80,20 @@ runs:
           actionContext.setOutput("tests_enabled", "${{ github.event.action }}" != 'closed' && "${{ inputs.run-tests }}" == 'true')
           actionContext.setOutput("image_tag_sha", `${{ inputs.docker-registry }}/${{ inputs.image-name }}:${{ github.sha }}`)
 
+          let aws_assume_role = ("${{ inputs.aws-assume-role }}" == 'true')
+          actionContext.setOutput("aws_assume_role", aws_assume_role)
+
+          if (aws_assume_role && "${{ inputs.aws-region }}" == '') {
+            core.setFailed('"aws-region" input must be set if "aws-assume-role" is "true"')
+          }
+
+          if (aws_assume_role && "${{ inputs.aws-iam-role-arn }}" == '') {
+            core.setFailed('"aws-iam-role-arn" input must be set if "aws-assume-role" is "true"')
+          }
+
+          actionContext.setOutput("ecr_login_enabled", "${{ inputs.aws-ecr-login }}" == 'true')
+          actionContext.setOutput("public_ecr_enabled", "${{ inputs.docker-registry }}".startsWith('public.'))
+
     - name: Check out repository code
       if: github.event.action != 'closed'
       uses: actions/checkout@v2
@@ -87,6 +121,26 @@ runs:
       with:
         endpoint: buildx-context
 
+    - name: Configure AWS Credentials
+      if: steps.vars.outputs.aws_assume_role == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.aws-iam-role-arn }}
+        role-session-name: ${{ inputs.aws-iam-role-session-name }}
+
+    - name: Login to Private Amazon ECR
+      if: steps.vars.outputs.public_ecr_enabled != 'true'
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # aws-actions/amazon-ecr-login does not support public repositories
+    # https://github.com/aws-actions/amazon-ecr-login/issues/116
+    - name: Login to Public Amazon ECR (via CLI)
+      if: steps.vars.outputs.public_ecr_enabled == 'true'
+      run: |
+        aws ecr-public get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin public.ecr.aws
+      shell: bash
+
     - name: Build & Push image to SHA and PR branch
       if: steps.vars.outputs.image_build_enabled == 'true'
       uses: docker/build-push-action@v2
@@ -102,7 +156,7 @@ runs:
         tags: |
           ${{ steps.vars.outputs.image_tag_sha }}
 
-    - name: Run tests
+    - name: Run test script
       if: steps.vars.outputs.tests_enabled == 'true'
       env:
         IMAGE: ${{ steps.vars.outputs.image_tag_sha }}

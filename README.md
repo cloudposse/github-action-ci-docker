@@ -103,19 +103,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ env.IAM_ROLE_ARN }}
-          role-session-name: github-action-ci-docker-workflow
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: Build, Test, and Push to Private ECR Registry
-        uses: cloudposse/github-action-ci-docker@main 
+        uses: cloudposse/github-action-ci-docker@main
         with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-assume-role: "true"
+          aws-iam-role-arn: ${{ env.IAM_ROLE_ARN }}
+          aws-ecr-login: "true"
           docker-registry: ${{ env.ECR_REGISTRY }}
 ````
 
@@ -287,10 +281,12 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 ### Contributors
 
 <!-- markdownlint-disable -->
-| 
-|
+|  [![Lucky Baar][leb4r_avatar]][leb4r_homepage]<br/>[Lucky Baar][leb4r_homepage] |
+|---|
 <!-- markdownlint-restore -->
 
+  [leb4r_homepage]: https://github.com/leb4r
+  [leb4r_avatar]: https://img.cloudposse.com/150x150/https://github.com/leb4r.png
 
 [![README Footer][readme_footer_img]][readme_footer_link]
 [![Beacon][beacon]][website]

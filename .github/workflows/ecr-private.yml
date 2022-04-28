@@ -25,19 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ env.IAM_ROLE_ARN }}
-          role-session-name: github-action-ci-docker-workflow
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: Build, Test, and Push to Private ECR Registry
         uses: ./
         with:
+          aws-assume-role: "true"
+          aws-iam-role-arn: ${{ env.IAM_ROLE_ARN }}
+          aws-ecr-login: "true"
           docker-registry: ${{ env.ECR_REGISTRY }}
           run-tests: "true"
           subdirectory: ./test
