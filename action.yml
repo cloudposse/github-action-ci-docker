@@ -73,7 +73,7 @@ runs:
     # docker context must be created prior to setting up Docker Buildx
     # https://github.com/actions-runner-controller/actions-runner-controller/issues/893
     - name: Set up Docker Context for Buildx
-      if: ${{ steps.vars.outputs.image_build_enabled == 'true' }}
+      if: steps.vars.outputs.image_build_enabled == 'true'
       shell: bash
       run: |
         docker context rm buildx-context || true
