@@ -1,4 +1,4 @@
-name: "docker"
+name: docker
 
 on:
   issue_comment:
@@ -31,6 +31,8 @@ jobs:
           role-session-name: github-action-ci-docker-workflow
           aws-region: ${{ env.AWS_REGION }}
 
+      # aws-actions/amazon-ecr-login does not support public repositories
+      # https://github.com/aws-actions/amazon-ecr-login/issues/116
       - name: Login to Amazon ECR
         run: |
           aws ecr-public get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin public.ecr.aws
