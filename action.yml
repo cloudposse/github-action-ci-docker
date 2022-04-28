@@ -1,22 +1,22 @@
-name: "Docker Continuous Integration"
+name: Docker Continuous Integration
 
 description: |
   Build and test code, push to docker registry and send a deployment event
 
 inputs:
   app-checkout-path:
-    description: "The path to checkout the application repository to during the workflow run"
+    description: The path to checkout the application repository to during the workflow run
     default: ./app-repo
     required: false
   deploy:
-    description: "A `true` value will trigger a GitHub deployment"
+    description: A `true` value will trigger a GitHub deployment
     required: false
     default: "false"
   docker-registry:
-    description: "Registry where docker image is stored"
+    description: Registry where docker image is stored
     required: true
   image-name:
-    description: "If present will override derived docker image name"
+    description: If present will override derived docker image name
     required: false
     default: ${{ github.event.repository.name }}
   org-access-token:
@@ -25,21 +25,21 @@ inputs:
       is not available in composite actions and must be passed in from the calling action
     required: false
   run-tests:
-    description: "A `true` value will result in running tests"
+    description: A `true` value will result in running tests
     default: "false"
     required: false
   secrets: # https://github.com/docker/build-push-action/blob/master/docs/advanced/secrets.md
-    description: "List of secrets to expose to the build (eg. key=string, GIT_AUTH_TOKEN=mytoken)"
+    description: List of secrets to expose to the build (eg. key=string, GIT_AUTH_TOKEN=mytoken)
     required: false
   stages:
-    description: "JSON formatted map of the environments and repos to deploy to based off GitHub event"
+    description: JSON formatted map of the environments and repos to deploy to based off GitHub event
     required: true
   subdirectory:
-    description: "Subdirectory of docker file"
+    description: Subdirectory of docker file
     required: false
     default: "."
   tests-script:
-    description: "Script to run during tests step, requires `run_tests` to be set to true, script needs to be executable"
+    description: Script to run during tests step, requires `run-tests` to be set to true, script needs to be executable
     default: tests.sh
     required: false
 
@@ -124,5 +124,5 @@ runs:
           deployment.newDeployment(JSON.parse(`${{ inputs.stages }}`))
 
 branding:
-  icon: "target"
-  color: "gray-dark"
+  icon: target
+  color: gray-dark
