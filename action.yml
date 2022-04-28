@@ -4,7 +4,7 @@ description: |
   Build and test code, push to docker registry and send a deployment event
 
 inputs:
-  app_checkout_path:
+  app-checkout-path:
     description: "The path to checkout the application repository to during the workflow run"
     default: ./app-repo
     required: false
@@ -12,19 +12,19 @@ inputs:
     description: "A `true` value will trigger a GitHub deployment"
     required: false
     default: "false"
-  docker_registry:
+  docker-registry:
     description: "Registry where docker image is stored"
     required: true
-  image_name:
+  image-name:
     description: "If present will override derived docker image name"
     required: false
     default: ${{ github.event.repository.name }}
-  org_access_token:
+  org-access-token:
     description: |
       Secret token for accessing other repos in the GitHub Org. The `secrets` context
       is not available in composite actions and must be passed in from the calling action
     required: false
-  run_tests:
+  run-tests:
     description: "A `true` value will result in running tests"
     default: "false"
     required: false
@@ -38,7 +38,7 @@ inputs:
     description: "Subdirectory of docker file"
     required: false
     default: "."
-  tests_script:
+  tests-script:
     description: "Script to run during tests step, requires `run_tests` to be set to true, script needs to be executable"
     default: tests.sh
     required: false
@@ -57,8 +57,8 @@ runs:
           const deployment = require('./lib/deployment.js')(actionContext)
 
           actionContext.setOutput("image_build_enabled", deployment.getInfoCI().image_build_enabled)
-          actionContext.setOutput("tests_enabled", "${{ github.event.action }}" != 'closed' && "${{ inputs.run_tests }}" == 'true')
-          actionContext.setOutput("image_tag_sha", `${{ inputs.docker_registry }}/${{ inputs.image_name }}:${{ github.sha }}`)
+          actionContext.setOutput("tests_enabled", "${{ github.event.action }}" != 'closed' && "${{ inputs.run-tests }}" == 'true')
+          actionContext.setOutput("image_tag_sha", `${{ inputs.docker-registry }}/${{ inputs.image-name }}:${{ github.sha }}`)
 
     - name: Check out repository code
       if: github.event.action != 'closed'
@@ -66,7 +66,7 @@ runs:
       with:
         # Checking the repo out to a separate path seems to avoid a current known issue
         # https://github.com/actions/runner/issues/1300
-        path: ${{ inputs.app_checkout_path }}
+        path: ${{ inputs.app-checkout-path }}
 
     # #####################################
     # Build Docker image
@@ -80,7 +80,7 @@ runs:
         docker context create buildx-context
 
     - name: Set up Docker Buildx (required for docker/build-push-action@v2)
-      if: ${{ steps.vars.outputs.image_build_enabled == 'true' }}
+      if: steps.vars.outputs.image_build_enabled == 'true'
       uses: docker/setup-buildx-action@v1
       env:
         DOCKER_CONFIG: /home/runner/.docker
@@ -88,10 +88,10 @@ runs:
         endpoint: buildx-context
 
     - name: Build & Push image to SHA and PR branch
-      if: ${{ steps.vars.outputs.image_build_enabled == 'true' }}
+      if: steps.vars.outputs.image_build_enabled == 'true'
       uses: docker/build-push-action@v2
       with:
-        context: ${{ inputs.app_checkout_path }}/${{ inputs.subdirectory }}
+        context: ${{ inputs.app-checkout-path }}/${{ inputs.subdirectory }}
         pull: true
         push: true
         # NOTE: when github actions has issues, we have to comment out the cache-* lines
@@ -103,19 +103,19 @@ runs:
           ${{ steps.vars.outputs.image_tag_sha }}
 
     - name: Run tests
-      if: ${{ steps.vars.outputs.tests_enabled == 'true' }}
+      if: steps.vars.outputs.tests_enabled == 'true'
       env:
         IMAGE: ${{ steps.vars.outputs.image_tag_sha }}
       run: |
-        ${{ inputs.app_checkout_path }}/${{ inputs.tests_script }}
+        ${{ inputs.app-checkout-path }}/${{ inputs.tests-script }}
       shell: bash
 
     - name: Create deployment
       uses: actions/github-script@v5
-      if: ${{ inputs.deploy == 'true' }}
+      if: inputs.deploy == 'true'
       with:
         debug: true
-        github-token: ${{ inputs.org_access_token }}
+        github-token: ${{ inputs.org-access-token }}
         script: |
           const actionContext = require('./lib/actioncontext.js')(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
           const deployment = require('./lib/deployment.js')(actionContext)

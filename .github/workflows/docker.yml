@@ -38,10 +38,10 @@ jobs:
       - name: Build, Test, and Push to Public ECR Registry
         uses: ./
         with:
-          docker_registry: public.ecr.aws/p6x8r6t0/cloudposse
-          run_tests: "true"
+          docker-registry: public.ecr.aws/p6x8r6t0/cloudposse
+          run-tests: "true"
           subdirectory: ./test
-          tests_script: ./test/test.sh
+          tests-script: ./test/test.sh
 
   ecr-private:
     # only run on pull requests so long as they don't come from forks
@@ -64,7 +64,7 @@ jobs:
       - name: Build, Test, and Push to Private ECR Registry
         uses: ./
         with:
-          docker_registry: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/cloudposse
-          run_tests: "true"
+          docker-registry: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/cloudposse
+          run-tests: "true"
           subdirectory: ./test
-          tests_script: ./test/test.sh
+          tests-script: ./test/test.sh
