@@ -73,7 +73,8 @@ runs:
       uses: actions/github-script@v5
       with:
         script: |
-          console.log("*****",require('path').dirname(require.main.filename))
+          const appDir=require('path').dirname(process.pkg ? process.execPath : (require.main ? require.main.filename : process.argv[0]));
+          console.log("*****",appDir)
           const actionContext = require('./lib/actioncontext.js')(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
           const deployment = require('./lib/deployment.js')(actionContext)
 
