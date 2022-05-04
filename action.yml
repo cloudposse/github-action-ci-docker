@@ -169,7 +169,7 @@ runs:
       shell: bash
 
     - name: Create deployment
-      uses: actions/github-script@v5
+      uses: actions/github-script@main
       if: inputs.deploy == 'true'
       with:
         debug: true
