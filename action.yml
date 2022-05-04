@@ -66,6 +66,14 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Check out repository code
+      if: github.event.action != 'closed'
+      uses: actions/checkout@v2
+      with:
+        # Checking the repo out to a separate path seems to avoid a current known issue
+        # https://github.com/actions/runner/issues/1300
+        path: ${{ inputs.app-checkout-path }}
+
     #####################################
     # Environment and variable setup
     - name: Set composite level variables
@@ -97,14 +105,6 @@ runs:
 
           actionContext.setOutput("ecr_login_enabled", "${{ inputs.aws-ecr-login }}" == 'true')
           actionContext.setOutput("public_ecr_enabled", "${{ inputs.docker-registry }}".startsWith('public.'))
-
-    - name: Check out repository code
-      if: github.event.action != 'closed'
-      uses: actions/checkout@v2
-      with:
-        # Checking the repo out to a separate path seems to avoid a current known issue
-        # https://github.com/actions/runner/issues/1300
-        path: ${{ inputs.app-checkout-path }}
 
     # #####################################
     # Build Docker image
