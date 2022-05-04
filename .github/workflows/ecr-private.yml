@@ -1,0 +1,37 @@
+name: ecr-private
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  AWS_REGION: us-east-1
+  IAM_ROLE_ARN: arn:aws:iam::095356423315:role/cptest-core-ue1-artifacts-ecr-private-github-action
+  ECR_REGISTRY: 095356423315.dkr.ecr.us-east-1.amazonaws.com/cloudposse
+
+# these permissions are needed to interact with GitHub's OIDC Token endpoint
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  docker:
+    # only run on pull requests so long as they don't come from forks
+    if: ( (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) ) || (github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build, Test, and Push to Private ECR Registry
+        uses: ./
+        with:
+          aws-assume-role: "true"
+          aws-iam-role-arn: ${{ env.IAM_ROLE_ARN }}
+          aws-ecr-login: "true"
+          docker-registry: ${{ env.ECR_REGISTRY }}
+          run-tests: "true"
+          subdirectory: ./test
+          tests-script: ./test/test.sh

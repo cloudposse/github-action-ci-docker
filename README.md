@@ -1,6 +1,6 @@
 
 <!-- markdownlint-disable -->
-# GitHub Action CI Docker [![Build Status](https://github.com/cloudposse/github-action-ci-docker/workflows/ci-docker/badge.svg?branch=main)](https://github.com/cloudposse/github-action-ci-docker/actions?query=workflow%3Adocker) [![Latest Release](https://img.shields.io/github/release/cloudposse/github-action-ci-docker.svg)](https://github.com/cloudposse/github-action-ci-docker/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+# GitHub Action CI Docker [![Private ECR](https://github.com/cloudposse/github-action-ci-docker/workflows/ecr-private/badge.svg?branch=main)](https://github.com/cloudposse/github-action-ci-docker/actions?query=workflow%3Aecr-private) [![Public ECR](https://github.com/cloudposse/github-action-ci-docker/workflows/ecr-public/badge.svg?branch=main)](https://github.com/cloudposse/github-action-ci-docker/actions?query=workflow%3Aecr-public) [![Latest Release](https://img.shields.io/github/release/cloudposse/github-action-ci-docker.svg)](https://github.com/cloudposse/github-action-ci-docker/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 <!-- markdownlint-restore -->
 
 [![README Header][readme_header_img]][readme_header_link]
@@ -28,7 +28,9 @@
 
 -->
 
-Github Action CI Docker...
+Github Action CI Docker will build, test, and deploy a container image using [Docker](https://www.docker.com/).
+The [`example`](https://github.com/cloudposse/github-action-ci-docker/.github/workflows/docker.yml/) showcases how
+to use private and public ECR repositories for storage. If desired, it will also trigger a deployment on another repository.
 
 ---
 
@@ -68,13 +70,54 @@ If you haven't already, follow the steps in the [quickstart](#quickstart) sectio
 
 ## Quick Start
 
-Here's how to get started...
+Create a new workflow manifest at `.github/workflows/docker.yml`.
+
+The following will build a container image based on `./Dockerfile`, assume a role using OIDC, get credentials from the container registry, and then push
+once complete. Just make sure to replace the following with value specific to your setup: `AWS_REGION, AWS_IAM_ROLE_ARN, and ECR_REGISTRY`.
+
+```yaml
+name: ecr-private
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  AWS_REGION: YOUR_AWS_REGION
+  IAM_ROLE_ARN: YOUR_IAM_ROLE_ARN
+  ECR_REGISTRY: YOUR_ECR_REGISTRY
+
+# these permissions are needed to interact with GitHub's OIDC Token endpoint
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  docker:
+    # only run on pull requests so long as they don't come from forks
+    if: ( (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) ) || (github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build, Test, and Push to Private ECR Registry
+        uses: cloudposse/github-action-ci-docker@main
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-assume-role: "true"
+          aws-iam-role-arn: ${{ env.IAM_ROLE_ARN }}
+          aws-ecr-login: "true"
+          docker-registry: ${{ env.ECR_REGISTRY }}
+````
 
 
 ## Examples
 
 Here's a real world example:
-- [`github-action-ci-docker`](https://github.com/cloudposse/github-action-ci-docker/.github/workflows/ci-docker.yml/) - Cloud Posse's self-testing Docker GitHub Action
+- [`github-action-ci-docker`](https://github.com/cloudposse/github-action-ci-docker/.github/workflows/docker.yml/) - Cloud Posse's self-testing Docker GitHub Action
 
 
 
@@ -94,7 +137,7 @@ Check out these related projects.
 
 - [GitHub Action Auto-release](https://github.com/cloudposse/github-action-auto-release) - Automatically draft release notes for a new release when merges are made into the default branch
 - [GitHub Action Terraform Auto-context](https://github.com/cloudposse/github-action-terraform-auto-context) - Automatically update `context.tf` whenever a new version becomes available
-- [GitHub Action CI Terraform](https://github.com/cloudposse/github-action-terraform-ci) - Full suite of CI actions specifically built for Terraform, along with chatops support
+- [GitHub Action CI Terraform](https://github.com/cloudposse/github-action-ci-terraform) - Full suite of CI actions specifically built for Terraform, along with chatops support
 - [GitHub Action Validate CODEOWNERS](https://github.com/cloudposse/github-action-validate-codeowners) - Validate and lint contents of CODEOWNERS file
 
 
@@ -238,10 +281,12 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 ### Contributors
 
 <!-- markdownlint-disable -->
-| 
-|
+|  [![Lucky Baar][leb4r_avatar]][leb4r_homepage]<br/>[Lucky Baar][leb4r_homepage] |
+|---|
 <!-- markdownlint-restore -->
 
+  [leb4r_homepage]: https://github.com/leb4r
+  [leb4r_avatar]: https://img.cloudposse.com/150x150/https://github.com/leb4r.png
 
 [![README Footer][readme_footer_img]][readme_footer_link]
 [![Beacon][beacon]][website]
