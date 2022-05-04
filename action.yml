@@ -78,7 +78,7 @@ runs:
     # Environment and variable setup
     - name: Set composite level variables
       id: vars
-      uses: actions/github-script@v5
+      uses: actions/github-script@main
       with:
         script: |
           const path = require('path')
