@@ -73,10 +73,12 @@ runs:
       uses: actions/github-script@v5
       with:
         script: |
-          const appDir=process.mainModule.filename;
-          console.log("*****",appDir)
-          const actionContext = require('./lib/actioncontext.js')(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
-          const deployment = require('./lib/deployment.js')(actionContext)
+          const path = require('path')
+          const actionContextPath = path.resolve('./lib/actioncontext.js')
+          const deploymentPath = path.resolve('./lib/deployment.js')
+
+          const actionContext = require(actionContextPath)(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
+          const deployment = require(deploymentPath)(actionContext)
 
           actionContext.setOutput("image_build_enabled", deployment.getInfoCI().image_build_enabled)
           actionContext.setOutput("tests_enabled", "${{ github.event.action }}" != 'closed' && "${{ inputs.run-tests }}" == 'true')
