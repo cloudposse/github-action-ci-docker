@@ -35,6 +35,9 @@ inputs:
   docker-registry:
     description: Registry where docker image is stored
     required: true
+  file:
+    description: "Path to the Dockerfile"
+    required: false
   image-name:
     description: If present will override derived docker image name
     required: false
@@ -148,6 +151,7 @@ runs:
       uses: docker/build-push-action@v2
       with:
         context: ${{ inputs.app-checkout-path }}/${{ inputs.subdirectory }}
+        file: ${{ inputs.file }}
         pull: true
         push: true
         # NOTE: when github actions has issues, we have to comment out the cache-* lines
