@@ -88,6 +88,8 @@ runs:
           const actionContext = require(actionContextPath)(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
           const deployment = require(deploymentPath)(actionContext)
 
+          var inputs = ${{ toJSON(inputs) }}
+
           actionContext.setOutput("image_build_enabled", deployment.getInfoCI().image_build_enabled)
           actionContext.setOutput("tests_enabled", "${{ github.event.action }}" != 'closed' && "${{ inputs.run-tests }}" == 'true')
           actionContext.setOutput("image_tag_sha", `${{ inputs.docker-registry }}/${{ inputs.image-name }}:${{ github.sha }}`)
@@ -103,8 +105,8 @@ runs:
             core.setFailed('"aws-iam-role-arn" input must be set if "aws-assume-role" is "true"')
           }
 
-          actionContext.setOutput("ecr_login_enabled", "${{ inputs.aws-ecr-login }}" == 'true')
-          actionContext.setOutput("public_ecr_enabled", "${{ inputs.docker-registry }}".startsWith('public.'))
+          actionContext.setOutput("ecr_login_enabled", "${{ github.event.inputs.aws-ecr-login }}" == 'true')
+          actionContext.setOutput("public_ecr_enabled", inputs['docker-registry'].startsWith('public.'))
 
     # #####################################
     # Build Docker image
