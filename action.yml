@@ -83,7 +83,7 @@ runs:
         script: |
           const path = require('path')
           const actionContextPath = require('./action/lib/actioncontext.js')
-          const deploymentPath = require('/.action/lib/deployment.js')
+          const deploymentPath = require('./action/lib/deployment.js')
 
           const actionContext = require(actionContextPath)(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
           const deployment = require(deploymentPath)(actionContext)
