@@ -170,19 +170,6 @@ runs:
         ${{ inputs.app-checkout-path }}/${{ inputs.tests-script }}
       shell: bash
 
-    - name: Create deployment
-      uses: actions/github-script@main
-      if: inputs.deploy == 'true'
-      with:
-        debug: true
-        github-token: ${{ inputs.org-access-token }}
-        script: |
-          const actionContext = require('./action/lib/actioncontext.js')(this, context, core, github, ${{ toJSON(github) }}, ${{ toJSON(inputs) }}, ${{ toJSON(steps) }})
-          const deployment = require('./action/lib/deployment.js')(actionContext)
-
-          let pr_suffix = deployment.getInfoCI().pr_suffix // referenced in inputs.stages
-          deployment.newDeployment(JSON.parse(`${{ inputs.stages }}`))
-
 branding:
   icon: target
   color: gray-dark
